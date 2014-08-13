@@ -260,26 +260,15 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
 #pragma mark - Creation & Destruction
 
 // NOTE: Should *not* call super's implementation.
-+ (instancetype)packageWithIdentifier:(NSString *)identifier {
-    return [[[self alloc] initWithIdentifier:identifier] autorelease];
++ (instancetype)packageForFile:(NSString *)filepath {
+    NSString *identifier = identifierForDebianPackageContainingFile(filepath);
+    return [self packageWithIdentifier:identifier];
 }
 
 // NOTE: Should *not* call super's implementation.
-+ (instancetype)packageForFile:(NSString *)filepath {
-    return [[[self alloc] initForFile:filepath] autorelease];
-}
-
-- (instancetype)initWithIdentifier:(NSString *)identifier {
-    self = [super init];
-    if (self != nil) {
-        packageDetails_ = [detailsForDebianPackageWithIdentifier(identifier) retain];
-    }
-    return self;
-}
-
-- (instancetype)initForFile:(NSString *)filepath {
-    NSString *identifier = identifierForDebianPackageContainingFile(filepath);
-    return [self initWithIdentifier:identifier];
++ (instancetype)packageWithIdentifier:(NSString *)identifier {
+    NSDictionary *packageDetails = detailsForDebianPackageWithIdentifier(identifier);
+    return [[[self alloc] initWithPackageDetails:packageDetails] autorelease];
 }
 
 - (id)initWithPackageDetails:(NSDictionary *)packageDetails {

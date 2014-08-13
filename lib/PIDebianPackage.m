@@ -320,8 +320,15 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
 
 - (NSDate *)installDate {
     if (installDate_ == nil) {
-        NSString *identifier = [self identifier];
-        installDate_ = [installDateForDebianPackageWithIdentifier(identifier) retain];
+        // NOTE: "InstallDate" is not a key produced by the dpkg utility; it is
+        //       a custom key created for this library to allow manually setting
+        //       an install date.
+        installDate_ = [packageDetails_ objectForKey:@"InstallDate"];
+        if (installDate_ == nil) {
+            NSString *identifier = [self identifier];
+            installDate_ = installDateForDebianPackageWithIdentifier(identifier);
+        }
+        [installDate_ retain];
     }
     return installDate_;
 }

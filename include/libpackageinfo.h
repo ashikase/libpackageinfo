@@ -13,5 +13,6 @@
 #import "PIAppleSystemPackage.h"
 #import "PIDebianPackage.h"
 #import "PIPackage.h"
+#import "PIPackageCache.h"
 
 /* vim: set ft=objc ff=unix sw=4 ts=4 tw=80 expandtab: */

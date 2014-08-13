@@ -8,7 +8,8 @@ libpackageinfo_OBJC_FILES = \
      lib/PIAppleStorePackage.m \
      lib/PIAppleSystemPackage.m \
      lib/PIDebianPackage.m \
-     lib/PIPackage.m
+     lib/PIPackage.m \
+     lib/PIPackageCache.m
 ADDITIONAL_CFLAGS = -DPKG_ID=\"$(PKG_ID)\" -Iinclude
 
 include theos/makefiles/common.mk

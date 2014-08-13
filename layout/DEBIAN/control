@@ -1,0 +1,14 @@
+Package: jp.ashikase.libpackageinfo
+Name: libpackageinfo
+Version: 1.0.0~b1
+Description: Library to retrieve package information.
+Architecture: iphoneos-arm
+Pre-Depends: firmware (>=3.0)
+Depiction: http://moreinfo.thebigboss.org/moreinfo/depiction.php?file=libpackageinfoData
+Homepage: http://github.com/ashikase/libpackageinfo
+Maintainer: BigBoss <bigboss@thebigboss.org>
+Author: Lance Fetters (ashikase) <support@ashikase.com>
+Sponsor: thebigboss.org <http://thebigboss.org>
+Section: Development
+Tag: role::developer
+dev: ashikase

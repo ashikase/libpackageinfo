@@ -1,0 +1,11 @@
+Package: jp.ashikase.packageinfo
+Name: packageinfo
+Pre-Depends: firmware (>=3.0)
+Version: 1.0.0
+Architecture: iphoneos-arm
+Description: Tool to retrieve package information.
+Maintainer: Lance Fetters
+Author: Lance Fetters (ashikase) <support@ashikase.com>
+Section: System
+Tag: role::hacker
+dev: ashikase

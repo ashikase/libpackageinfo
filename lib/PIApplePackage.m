@@ -164,7 +164,7 @@ static NSDictionary *reverseLookupTable$ = nil;
 - (id)initWithPackageDetails:(NSDictionary *)packageDetails {
     self = [super init];
     if (self != nil) {
-        packageDetails_ = [packageDetails retain];
+        packageDetails_ = [packageDetails copy];
     }
     return self;
 }

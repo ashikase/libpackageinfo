@@ -272,11 +272,16 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
 }
 
 - (id)initWithPackageDetails:(NSDictionary *)packageDetails {
-    self = [super init];
-    if (self != nil) {
-        packageDetails_ = [packageDetails copy];
+    if ([packageDetails count] > 0) {
+        self = [super init];
+        if (self != nil) {
+            packageDetails_ = [packageDetails copy];
+        }
+        return self;
+    } else {
+        [self release];
+        return nil;
     }
-    return self;
 }
 
 - (void)dealloc {

@@ -19,8 +19,8 @@ after-stage::
 	# Remove repository-related files.
 	- find $(THEOS_STAGING_DIR) -name '.gitkeep' -delete
 	# Copy header files to include directory.
-	- mkdir -p $(THEOS_STAGING_DIR)/usr/include/libpackageinfo/
-	- cp $(THEOS_PROJECT_DIR)/include/*.h $(THEOS_STAGING_DIR)/usr/include/libpackageinfo/
+	- mkdir -p $(THEOS_STAGING_DIR)/usr/include/$(LIBRARY_NAME)/
+	- cp $(THEOS_PROJECT_DIR)/include/*.h $(THEOS_STAGING_DIR)/usr/include/$(LIBRARY_NAME)/
 
 distclean: clean
 	- rm -f $(THEOS_PROJECT_DIR)/$(PKG_ID)*.deb

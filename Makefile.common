@@ -25,3 +25,8 @@ after-stage::
 distclean: clean
 	- rm -f $(THEOS_PROJECT_DIR)/$(PKG_ID)*.deb
 	- rm -f $(THEOS_PROJECT_DIR)/.theos/packages/*
+
+sdk:
+	- mkdir -p $(THEOS)/include/$(LIBRARY_NAME)/
+	- cp $(THEOS_PROJECT_DIR)/include/*.h $(THEOS)/include/$(LIBRARY_NAME)/
+	- cp $(THEOS_OBJ_DIR)/$(LIBRARY_NAME).dylib $(THEOS)/lib/

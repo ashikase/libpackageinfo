@@ -11,7 +11,7 @@ libpackageinfo_OBJC_FILES = \
     lib/PIDebianPackage.m \
     lib/PIPackage.m \
     lib/PIPackageCache.m
-ADDITIONAL_CFLAGS = -DPKG_ID=\"$(PKG_ID)\" -Iinclude -ILibraries
+ADDITIONAL_CFLAGS = -DPKG_ID=\"$(PKG_ID)\" -Iinclude -ILibraries --include Libraries/Common/firmware.h
 
 include theos/makefiles/common.mk
 include $(THEOS)/makefiles/library.mk

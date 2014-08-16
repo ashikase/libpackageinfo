@@ -85,7 +85,22 @@
 
 - (id)initWithDetailsFromJSONString:(NSString *)string {
     // Parse the JSON into a dictionary.
-    id object = [string objectFromJSONString];
+    id object = nil;
+    if (IOS_LT(6_0)) {
+        object = [string objectFromJSONString];
+    } else {
+        Class $NSJSONSerialization = NSClassFromString(@"NSJSONSerialization");
+        if ($NSJSONSerialization != Nil) {
+            NSError *error= nil;
+            NSData *data = [string dataUsingEncoding:NSUTF8StringEncoding];
+            object = [$NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+            if (object == nil) {
+                fprintf(stderr, "ERROR: Unable to parse JSON string: %s.\n", [[error localizedDescription] UTF8String]);
+            }
+        } else {
+            fprintf(stderr, "ERROR: NSJSONSerialization class not available.\n");
+        }
+    }
     if ([object isKindOfClass:[NSDictionary class]]) {
         return [self initWithDetails:object];
     } else {
@@ -141,7 +156,31 @@
 }
 
 - (NSString *)JSONRepresentation {
-    return [packageDetails_ JSONString];
+    NSString *string = nil;
+    if (IOS_LT(6_0)) {
+        string = [packageDetails_ JSONString];
+        if (string == nil) {
+            fprintf(stderr, "ERROR: Unable to convert dictionary to JSON string.\n");
+        }
+    } else {
+        Class $NSJSONSerialization = NSClassFromString(@"NSJSONSerialization");
+        if ($NSJSONSerialization != Nil) {
+            NSError *error = nil;
+            if ([$NSJSONSerialization isValidJSONObject:packageDetails_]) {
+                NSData *data = [$NSJSONSerialization dataWithJSONObject:packageDetails_ options:NSJSONWritingPrettyPrinted error:&error];
+                if (data != nil) {
+                    string = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
+                } else {
+                    fprintf(stderr, "ERROR: Unable to convert dictionary to JSON string: %s.\n", [[error localizedDescription] UTF8String]);
+                }
+            } else {
+                fprintf(stderr, "ERROR: Dictionary is not valid JSON object.\n");
+            }
+        } else {
+            fprintf(stderr, "ERROR: NSJSONSerialization class not available.\n");
+        }
+    }
+    return string;
 }
 
 @end

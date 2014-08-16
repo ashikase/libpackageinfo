@@ -235,9 +235,7 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
     return date;
 }
 
-@implementation PIDebianPackage {
-    NSDate *installDate_;
-}
+@implementation PIDebianPackage
 
 + (void)initialize {
     if (self == [PIDebianPackage class]) {
@@ -315,11 +313,6 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
     return [self initWithDetails:details];
 }
 
-- (void)dealloc {
-    [installDate_ release];
-    [super dealloc];
-}
-
 #pragma mark - Properties (Overrides)
 
 - (NSString *)identifier {
@@ -348,11 +341,11 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
     //       an install date.
     NSDate *installDate = [packageDetails_ objectForKey:@"InstallDate"];
     if (installDate == nil) {
-        if (installDate_ == nil) {
-            NSString *identifier = [self identifier];
-            installDate_ = [installDateForDebianPackageWithIdentifier(identifier) retain];
+        NSString *identifier = [self identifier];
+        installDate = installDateForDebianPackageWithIdentifier(identifier);
+        if (installDate != nil) {
+            [packageDetails_ setObject:installDate forKey:@"InstallDate"];
         }
-        installDate = installDate_;
     }
     return installDate;
 }

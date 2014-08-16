@@ -10,7 +10,7 @@
 #import <Foundation/Foundation.h>
 
 @interface PIPackage : NSObject {
-    @package NSDictionary *packageDetails_;
+    @package NSMutableDictionary *packageDetails_;
 }
 @property(nonatomic, readonly) NSString *identifier;
 @property(nonatomic, readonly) NSString *storeIdentifier;

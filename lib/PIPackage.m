@@ -76,7 +76,7 @@
     if ([details count] > 0) {
         self = [super init];
         if (self != nil) {
-            packageDetails_ = [details copy];
+            packageDetails_ = [details mutableCopy];
         }
         return self;
     } else {

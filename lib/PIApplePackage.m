@@ -205,7 +205,6 @@ static NSDictionary *reverseLookupTable$ = nil;
 }
 
 - (NSString *)name {
-    // NOTE: Key "Name" is added when parsing from JSON.
     NSString *name = [packageDetails_ objectForKey:@"Name"];
     if (name == nil) {
         NSBundle *bundle = [[NSBundle alloc] initWithPath:[self bundlePath]];
@@ -222,6 +221,10 @@ static NSDictionary *reverseLookupTable$ = nil;
             name = [info objectForKey:(NSString *)kCFBundleNameKey];
         }
         [bundle release];
+
+        if (name != nil) {
+            [packageDetails_ setObject:name forKey:@"Name"];
+        }
     }
 
     return name;
@@ -236,10 +239,17 @@ static NSDictionary *reverseLookupTable$ = nil;
 }
 
 - (NSDate *)installDate {
-    NSNumber *bundleTimestamp = [packageDetails_ objectForKey:@"BundleTimestamp"];
-    return (bundleTimestamp != nil) ?
-        [NSDate dateWithTimeIntervalSince1970:[bundleTimestamp doubleValue]] :
-        nil;
+    NSDate *installDate = [packageDetails_ objectForKey:@"InstallDate"];
+    if (installDate == nil) {
+        NSNumber *bundleTimestamp = [packageDetails_ objectForKey:@"BundleTimestamp"];
+        if (bundleTimestamp != nil) {
+            installDate = [NSDate dateWithTimeIntervalSince1970:[bundleTimestamp doubleValue]];
+            if (installDate != nil) {
+                [packageDetails_ setObject:installDate forKey:@"InstallDate"];
+            }
+        }
+    }
+    return installDate;
 }
 
 - (NSString *)bundlePath {

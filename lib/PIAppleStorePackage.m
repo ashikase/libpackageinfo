@@ -9,6 +9,10 @@
 
 #import "PIAppleStorePackage.h"
 
+@interface PIPackage (Private)
+- (id)initWithDetails:(NSDictionary *)details;
+@end
+
 @implementation PIAppleStorePackage {
     NSDictionary *metadata_;
 }

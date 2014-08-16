@@ -9,14 +9,15 @@
 
 #import "PIApplePackage.h"
 
-#import <JSONKit/JSONKit.h>
 #import "PIAppleDeveloperPackage.h"
 #import "PIAppleStorePackage.h"
 #import "PIAppleSystemPackage.h"
 
-@implementation PIApplePackage {
-    NSDictionary *packageDetails_;
-}
+@interface PIPackage (Private)
+- (id)initWithDetails:(NSDictionary *)details;
+@end
+
+@implementation PIApplePackage
 
 static NSDictionary *cachedPackageDetails$ = nil;
 static NSDictionary *reverseLookupTable$ = nil;
@@ -162,36 +163,6 @@ static NSDictionary *reverseLookupTable$ = nil;
     }
 }
 
-- (id)initWithDetails:(NSDictionary *)details {
-    if ([details count] > 0) {
-        self = [super init];
-        if (self != nil) {
-            packageDetails_ = [details copy];
-        }
-        return self;
-    } else {
-        [self release];
-        return nil;
-    }
-}
-
-- (id)initWithDetailsFromJSONString:(NSString *)string {
-    // Parse the JSON into a dictionary.
-    id object = [string objectFromJSONString];
-    if ([object isKindOfClass:[NSDictionary class]]) {
-        return [self initWithDetails:object];
-    } else {
-        fprintf(stderr, "ERROR: JSON string could not be parsed or is not a dictionary.\n");
-        [self release];
-        return nil;
-    }
-}
-
-- (void)dealloc {
-    [packageDetails_ release];
-    [super dealloc];
-}
-
 #pragma mark - Properties
 
 - (NSString *)identifier {
@@ -238,16 +209,6 @@ static NSDictionary *reverseLookupTable$ = nil;
 
 - (NSString *)containerPath {
     return [packageDetails_ objectForKey:@"Container"];
-}
-
-#pragma mark - Representations
-
-- (NSDictionary *)dictionaryRepresentation {
-    return [[packageDetails_ copy] autorelease];
-}
-
-- (NSString *)JSONRepresentation {
-    return [packageDetails_ JSONString];
 }
 
 @end

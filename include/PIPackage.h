@@ -9,7 +9,9 @@
 
 #import <Foundation/Foundation.h>
 
-@interface PIPackage : NSObject
+@interface PIPackage : NSObject {
+    @package NSDictionary *packageDetails_;
+}
 @property(nonatomic, readonly) NSString *identifier;
 @property(nonatomic, readonly) NSString *storeIdentifier;
 @property(nonatomic, readonly) NSString *name;

@@ -9,6 +9,7 @@
 
 #import "PIPackage.h"
 
+#import <JSONKit/JSONKit.h>
 #import "PIApplePackage.h"
 #import "PIDebianPackage.h"
 
@@ -69,6 +70,36 @@
     }
 }
 
+- (id)initWithDetails:(NSDictionary *)details {
+    if ([details count] > 0) {
+        self = [super init];
+        if (self != nil) {
+            packageDetails_ = [details copy];
+        }
+        return self;
+    } else {
+        [self release];
+        return nil;
+    }
+}
+
+- (id)initWithDetailsFromJSONString:(NSString *)string {
+    // Parse the JSON into a dictionary.
+    id object = [string objectFromJSONString];
+    if ([object isKindOfClass:[NSDictionary class]]) {
+        return [self initWithDetails:object];
+    } else {
+        fprintf(stderr, "ERROR: JSON string could not be parsed or is not a dictionary.\n");
+        [self release];
+        return nil;
+    }
+}
+
+- (void)dealloc {
+    [packageDetails_ release];
+    [super dealloc];
+}
+
 #pragma mark - Properties
 
 - (NSString *)identifier {
@@ -106,11 +137,11 @@
 #pragma mark - Representations
 
 - (NSDictionary *)dictionaryRepresentation {
-    return nil;
+    return [[packageDetails_ copy] autorelease];
 }
 
 - (NSString *)JSONRepresentation {
-    return nil;
+    return [packageDetails_ JSONString];
 }
 
 @end

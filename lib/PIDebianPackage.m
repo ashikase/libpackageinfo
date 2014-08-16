@@ -11,8 +11,11 @@
 
 #import "PIDebianPackage.h"
 
-#import <JSONKit/JSONKit.h>
 #include <sys/stat.h>
+
+@interface PIPackage (Private)
+- (id)initWithDetails:(NSDictionary *)details;
+@end
 
 static NSString * const kDebianPackageInfoPath = @"/var/lib/dpkg/info";
 
@@ -236,7 +239,6 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
 }
 
 @implementation PIDebianPackage {
-    NSDictionary *packageDetails_;
     NSDate *installDate_;
 }
 
@@ -272,34 +274,8 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
     return [[[self alloc] initWithDetails:packageDetails] autorelease];
 }
 
-- (id)initWithDetails:(NSDictionary *)details {
-    if ([details count] > 0) {
-        self = [super init];
-        if (self != nil) {
-            packageDetails_ = [details copy];
-        }
-        return self;
-    } else {
-        [self release];
-        return nil;
-    }
-}
-
-- (id)initWithDetailsFromJSONString:(NSString *)string {
-    // Parse the JSON into a dictionary.
-    id object = [string objectFromJSONString];
-    if ([object isKindOfClass:[NSDictionary class]]) {
-        return [self initWithDetails:object];
-    } else {
-        fprintf(stderr, "ERROR: JSON string could not be parsed or is not a dictionary.\n");
-        [self release];
-        return nil;
-    }
-}
-
 - (void)dealloc {
     [installDate_ release];
-    [packageDetails_ release];
     [super dealloc];
 }
 
@@ -342,16 +318,6 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
 
 - (NSString *)libraryPath {
     return @"/var/mobile/Library";
-}
-
-#pragma mark - Representations
-
-- (NSDictionary *)dictionaryRepresentation {
-    return [[packageDetails_ copy] autorelease];
-}
-
-- (NSString *)JSONRepresentation {
-    return [packageDetails_ JSONString];
 }
 
 @end

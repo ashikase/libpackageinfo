@@ -9,6 +9,7 @@
 
 #import "PIApplePackage.h"
 
+#import <JSONKit/JSONKit.h>
 #import "PIAppleDeveloperPackage.h"
 #import "PIAppleStorePackage.h"
 #import "PIAppleSystemPackage.h"
@@ -128,13 +129,13 @@ static NSDictionary *reverseLookupTable$ = nil;
         id applicationType = [object objectForKey:@"ApplicationType"];
         if ([applicationType isKindOfClass:$NSString]) {
             if ([applicationType isEqualToString:@"System"]) {
-                return [[[PIAppleSystemPackage alloc] initWithPackageDetails:object] autorelease];
+                return [[[PIAppleSystemPackage alloc] initWithDetails:object] autorelease];
             } else {
                 id applicationDSID = [object objectForKey:@"ApplicationDSID"];
                 if ([applicationDSID isKindOfClass:$NSNumber]) {
-                    return [[[PIAppleStorePackage alloc] initWithPackageDetails:object] autorelease];
+                    return [[[PIAppleStorePackage alloc] initWithDetails:object] autorelease];
                 } else {
-                    return [[[PIAppleDeveloperPackage alloc] initWithPackageDetails:object] autorelease];
+                    return [[[PIAppleDeveloperPackage alloc] initWithDetails:object] autorelease];
                 }
             }
         }
@@ -161,14 +162,26 @@ static NSDictionary *reverseLookupTable$ = nil;
     }
 }
 
-- (id)initWithPackageDetails:(NSDictionary *)packageDetails {
-    if ([packageDetails count] > 0) {
+- (id)initWithDetails:(NSDictionary *)details {
+    if ([details count] > 0) {
         self = [super init];
         if (self != nil) {
-            packageDetails_ = [packageDetails copy];
+            packageDetails_ = [details copy];
         }
         return self;
     } else {
+        [self release];
+        return nil;
+    }
+}
+
+- (id)initWithDetailsFromJSONString:(NSString *)string {
+    // Parse the JSON into a dictionary.
+    id object = [string objectFromJSONString];
+    if ([object isKindOfClass:[NSDictionary class]]) {
+        return [self initWithDetails:object];
+    } else {
+        fprintf(stderr, "ERROR: JSON string could not be parsed or is not a dictionary.\n");
         [self release];
         return nil;
     }
@@ -225,6 +238,16 @@ static NSDictionary *reverseLookupTable$ = nil;
 
 - (NSString *)containerPath {
     return [packageDetails_ objectForKey:@"Container"];
+}
+
+#pragma mark - Representations
+
+- (NSDictionary *)dictionaryRepresentation {
+    return [[packageDetails_ copy] autorelease];
+}
+
+- (NSString *)JSONRepresentation {
+    return [packageDetails_ JSONString];
 }
 
 @end

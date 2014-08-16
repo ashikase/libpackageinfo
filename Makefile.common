@@ -3,14 +3,15 @@ PKG_ID = jp.ashikase.libpackageinfo
 
 libpackageinfo_INSTALL_PATH = /usr/lib
 libpackageinfo_OBJC_FILES = \
-     lib/PIAppleDeveloperPackage.m \
-     lib/PIApplePackage.m \
-     lib/PIAppleStorePackage.m \
-     lib/PIAppleSystemPackage.m \
-     lib/PIDebianPackage.m \
-     lib/PIPackage.m \
-     lib/PIPackageCache.m
-ADDITIONAL_CFLAGS = -DPKG_ID=\"$(PKG_ID)\" -Iinclude
+    Libraries/JSONKit/JSONKit.m \
+    lib/PIAppleDeveloperPackage.m \
+    lib/PIApplePackage.m \
+    lib/PIAppleStorePackage.m \
+    lib/PIAppleSystemPackage.m \
+    lib/PIDebianPackage.m \
+    lib/PIPackage.m \
+    lib/PIPackageCache.m
+ADDITIONAL_CFLAGS = -DPKG_ID=\"$(PKG_ID)\" -Iinclude -ILibraries
 
 include theos/makefiles/common.mk
 include $(THEOS)/makefiles/library.mk

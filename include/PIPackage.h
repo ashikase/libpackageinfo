@@ -20,6 +20,8 @@
 @property(nonatomic, readonly) NSString *libraryPath;
 + (instancetype)packageForFile:(NSString *)filepath;
 + (instancetype)packageWithIdentifier:(NSString *)identifier;
+- (NSDictionary *)dictionaryRepresentation;
+- (NSString *)JSONRepresentation;
 @end
 
 /* vim: set ft=objc ff=unix sw=4 ts=4 tw=80 expandtab: */

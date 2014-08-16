@@ -15,8 +15,8 @@
 
 #pragma mark - Creation and Destruction
 
-- (id)initWithPackageDetails:(NSDictionary *)packageDetails {
-    self = [super initWithPackageDetails:packageDetails];
+- (id)initWithDetails:(NSDictionary *)details {
+    self = [super initWithDetails:details];
     if (self != nil) {
         NSString *metadataPath = [[self containerPath] stringByAppendingPathComponent:@"iTunesMetadata.plist"];
         NSDictionary *metadata = [[NSDictionary alloc] initWithContentsOfFile:metadataPath];

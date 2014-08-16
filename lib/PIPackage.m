@@ -103,6 +103,16 @@
     return nil;
 }
 
+#pragma mark - Representations
+
+- (NSDictionary *)dictionaryRepresentation {
+    return nil;
+}
+
+- (NSString *)JSONRepresentation {
+    return nil;
+}
+
 @end
 
 /* vim: set ft=objc ff=unix sw=4 ts=4 tw=80 expandtab: */

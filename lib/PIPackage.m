@@ -174,10 +174,12 @@
         [dictionary setObject:name forKey:@"name"];
     }
 
+#if 0
     NSString *author = [self author];
     if (author != nil) {
         [dictionary setObject:author forKey:@"author"];
     }
+#endif
 
     NSString *version = [self version];
     if (version != nil) {

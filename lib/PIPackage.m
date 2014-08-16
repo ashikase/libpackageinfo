@@ -13,6 +13,8 @@
 #import "PIApplePackage.h"
 #import "PIDebianPackage.h"
 
+#include <time.h>
+
 @implementation PIPackage
 
 @dynamic identifier;
@@ -83,6 +85,14 @@
     }
 }
 
+- (id)initWithDetailsFromJSONDictionary:(NSDictionary *)dictionary {
+    // NOTE: Subclasses should completely override this method in order to
+    //       perform any necessary conversion on the contained keys and values.
+    fprintf(stderr, "ERROR: PIPackage's implementation of 'initWithDetailsFromJSONDictionary:' should never be called.\n");
+    [self release];
+    return nil;
+}
+
 - (id)initWithDetailsFromJSONString:(NSString *)string {
     // Parse the JSON into a dictionary.
     id object = nil;
@@ -102,7 +112,7 @@
         }
     }
     if ([object isKindOfClass:[NSDictionary class]]) {
-        return [self initWithDetails:object];
+        return [self initWithDetailsFromJSONDictionary:object];
     } else {
         fprintf(stderr, "ERROR: JSON string could not be parsed or is not a dictionary.\n");
         [self release];
@@ -152,13 +162,50 @@
 #pragma mark - Representations
 
 - (NSDictionary *)dictionaryRepresentation {
-    return [[packageDetails_ copy] autorelease];
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+
+    NSString *identifier = [self identifier];
+    if (identifier != nil) {
+        [dictionary setObject:identifier forKey:@"identifier"];
+    }
+
+    NSString *name = [self name];
+    if (name != nil) {
+        [dictionary setObject:name forKey:@"name"];
+    }
+
+    NSString *author = [self author];
+    if (author != nil) {
+        [dictionary setObject:author forKey:@"author"];
+    }
+
+    NSString *version = [self version];
+    if (version != nil) {
+        [dictionary setObject:version forKey:@"version"];
+    }
+
+    NSDate *date = [self installDate];
+    if (date != nil) {
+        // Convert date to string.
+        char buf[29];
+        const char *format = "%Y-%m-%d %H:%M:%S %z";
+        time_t interval = (time_t)[date timeIntervalSince1970];
+        if (strftime(buf, 29, format, localtime(&interval)) > 0) {
+            NSString *string = [[NSString alloc] initWithCString:buf encoding:NSUTF8StringEncoding];
+            [dictionary setObject:string forKey:@"install_date"];
+            [string release];
+        }
+    }
+
+    return dictionary;
 }
 
 - (NSString *)JSONRepresentation {
     NSString *string = nil;
+
+    NSDictionary *dictionary = [self dictionaryRepresentation];
     if (IOS_LT(6_0)) {
-        string = [packageDetails_ JSONString];
+        string = [dictionary JSONString];
         if (string == nil) {
             fprintf(stderr, "ERROR: Unable to convert dictionary to JSON string.\n");
         }
@@ -166,8 +213,8 @@
         Class $NSJSONSerialization = NSClassFromString(@"NSJSONSerialization");
         if ($NSJSONSerialization != Nil) {
             NSError *error = nil;
-            if ([$NSJSONSerialization isValidJSONObject:packageDetails_]) {
-                NSData *data = [$NSJSONSerialization dataWithJSONObject:packageDetails_ options:NSJSONWritingPrettyPrinted error:&error];
+            if ([$NSJSONSerialization isValidJSONObject:dictionary]) {
+                NSData *data = [$NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
                 if (data != nil) {
                     string = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
                 } else {

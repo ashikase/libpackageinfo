@@ -159,6 +159,45 @@ static NSDictionary *reverseLookupTable$ = nil;
     }
 }
 
+- (id)initWithDetailsFromJSONDictionary:(NSDictionary *)dictionary {
+    NSMutableDictionary *details = [NSMutableDictionary dictionary];
+
+    id object;
+    Class $NSString = [NSString class];
+
+    object = [dictionary objectForKey:@"identifier"];
+    if ([object isKindOfClass:$NSString]) {
+        [details setObject:object forKey:(NSString *)kCFBundleIdentifierKey];
+    }
+
+    object = [dictionary objectForKey:@"name"];
+    if ([object isKindOfClass:$NSString]) {
+        [details setObject:object forKey:@"Name"];
+    }
+
+    object = [dictionary objectForKey:@"version"];
+    if ([object isKindOfClass:$NSString]) {
+        [details setObject:object forKey:@"CFBundleShortVersionString"];
+    }
+
+    object = [dictionary objectForKey:@"install_date"];
+    if ([object isKindOfClass:$NSString]) {
+        struct tm time;
+        const char *format = "%Y-%m-%d %H:%M:%S %z";
+        if (strptime([object UTF8String], format, &time) != NULL) {
+            NSNumber *number = [[NSNumber alloc] initWithLong:mktime(&time)];
+            if (number != nil) {
+                [details setObject:number forKey:@"BundleTimestamp"];
+                [number release];
+            }
+        } else {
+            fprintf(stderr, "WARNING: Unable to parse date: \"%s\".\n", [object UTF8String]);
+        }
+    }
+
+    return [self initWithDetails:details];
+}
+
 #pragma mark - Properties
 
 - (NSString *)identifier {
@@ -166,20 +205,24 @@ static NSDictionary *reverseLookupTable$ = nil;
 }
 
 - (NSString *)name {
-    NSBundle *bundle = [[NSBundle alloc] initWithPath:[self bundlePath]];
-    NSDictionary *info = [bundle localizedInfoDictionary];
-    NSString *name = [info objectForKey:@"CFBundleDisplayName"];
+    // NOTE: Key "Name" is added when parsing from JSON.
+    NSString *name = [packageDetails_ objectForKey:@"Name"];
     if (name == nil) {
-        name = [info objectForKey:(NSString *)kCFBundleNameKey];
-    }
-    if (name == nil) {
-        info = [bundle infoDictionary];
+        NSBundle *bundle = [[NSBundle alloc] initWithPath:[self bundlePath]];
+        NSDictionary *info = [bundle localizedInfoDictionary];
         name = [info objectForKey:@"CFBundleDisplayName"];
+        if (name == nil) {
+            name = [info objectForKey:(NSString *)kCFBundleNameKey];
+        }
+        if (name == nil) {
+            info = [bundle infoDictionary];
+            name = [info objectForKey:@"CFBundleDisplayName"];
+        }
+        if (name == nil) {
+            name = [info objectForKey:(NSString *)kCFBundleNameKey];
+        }
+        [bundle release];
     }
-    if (name == nil) {
-        name = [info objectForKey:(NSString *)kCFBundleNameKey];
-    }
-    [bundle release];
 
     return name;
 }

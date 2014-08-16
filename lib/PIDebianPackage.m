@@ -12,6 +12,7 @@
 #import "PIDebianPackage.h"
 
 #include <sys/stat.h>
+#include <time.h>
 
 static NSString * const kDebianPackageInfoPath = @"/var/lib/dpkg/info";
 
@@ -270,6 +271,50 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
     return [[[self alloc] initWithDetails:packageDetails] autorelease];
 }
 
+- (id)initWithDetailsFromJSONDictionary:(NSDictionary *)dictionary {
+    NSMutableDictionary *details = [NSMutableDictionary dictionary];
+
+    id object;
+    Class $NSString = [NSString class];
+
+    object = [dictionary objectForKey:@"identifier"];
+    if ([object isKindOfClass:$NSString]) {
+        [details setObject:object forKey:@"Package"];
+    }
+
+    object = [dictionary objectForKey:@"name"];
+    if ([object isKindOfClass:$NSString]) {
+        [details setObject:object forKey:@"Name"];
+    }
+
+    object = [dictionary objectForKey:@"author"];
+    if ([object isKindOfClass:$NSString]) {
+        [details setObject:object forKey:@"Author"];
+    }
+
+    object = [dictionary objectForKey:@"version"];
+    if ([object isKindOfClass:$NSString]) {
+        [details setObject:object forKey:@"Version"];
+    }
+
+    object = [dictionary objectForKey:@"install_date"];
+    if ([object isKindOfClass:$NSString]) {
+        struct tm time;
+        const char *format = "%Y-%m-%d %H:%M:%S %z";
+        if (strptime([object UTF8String], format, &time) != NULL) {
+            NSDate *date = [[NSDate alloc] initWithTimeIntervalSince1970:mktime(&time)];
+            if (date != nil) {
+                [details setObject:date forKey:@"InstallDate"];
+                [date release];
+            }
+        } else {
+            fprintf(stderr, "WARNING: Unable to parse date: \"%s\".\n", [object UTF8String]);
+        }
+    }
+
+    return [self initWithDetails:details];
+}
+
 - (void)dealloc {
     [installDate_ release];
     [super dealloc];
@@ -298,9 +343,9 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
 }
 
 - (NSDate *)installDate {
-        // NOTE: "InstallDate" is not a key produced by the dpkg utility; it is
-        //       a custom key created for this library to allow manually setting
-        //       an install date.
+    // NOTE: "InstallDate" is not a key produced by the dpkg utility; it is
+    //       a custom key created for this library to allow manually setting
+    //       an install date.
     NSDate *installDate = [packageDetails_ objectForKey:@"InstallDate"];
     if (installDate == nil) {
         if (installDate_ == nil) {

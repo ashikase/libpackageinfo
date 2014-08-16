@@ -22,6 +22,8 @@
 @property(nonatomic, readonly) NSString *libraryPath;
 + (instancetype)packageForFile:(NSString *)filepath;
 + (instancetype)packageWithIdentifier:(NSString *)identifier;
+- (id)initWithDetails:(NSDictionary *)details;
+- (id)initWithDetailsFromJSONString:(NSString *)string;
 - (NSDictionary *)dictionaryRepresentation;
 - (NSString *)JSONRepresentation;
 @end

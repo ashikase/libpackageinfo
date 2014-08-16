@@ -13,10 +13,6 @@
 
 #include <sys/stat.h>
 
-@interface PIPackage (Private)
-- (id)initWithDetails:(NSDictionary *)details;
-@end
-
 static NSString * const kDebianPackageInfoPath = @"/var/lib/dpkg/info";
 
 static NSSet *filesFromDebianPackages$ = nil;

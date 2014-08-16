@@ -13,10 +13,6 @@
 #import "PIAppleStorePackage.h"
 #import "PIAppleSystemPackage.h"
 
-@interface PIPackage (Private)
-- (id)initWithDetails:(NSDictionary *)details;
-@end
-
 @implementation PIApplePackage
 
 static NSDictionary *cachedPackageDetails$ = nil;

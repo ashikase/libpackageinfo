@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-#import "PackageInfo.h"
+#import <libpackageinfo/libpackageinfo.h>
 
 static void print_usage() {
     fprintf(stderr,

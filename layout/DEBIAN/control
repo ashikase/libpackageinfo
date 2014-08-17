@@ -1,6 +1,6 @@
 Package: jp.ashikase.libpackageinfo
 Name: libpackageinfo
-Version: 1.0.0~b1
+Version: 1.0.0
 Description: Library to retrieve package information.
 Architecture: iphoneos-arm
 Pre-Depends: firmware (>=3.0)

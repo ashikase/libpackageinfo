@@ -90,9 +90,15 @@ static NSDictionary *reverseLookupTable$ = nil;
 + (instancetype)packageForFile:(NSString *)filepath {
     // Check if any component in the path has a .app suffix.
     NSString *bundlePath = filepath;
-    do {
-        bundlePath = [bundlePath stringByDeletingLastPathComponent];
-        if ([bundlePath hasSuffix:@".app"]) {
+    for (;;) {
+        NSString *lastPathComponent = [bundlePath lastPathComponent];
+
+        if ([lastPathComponent isEqualToString:bundlePath]) {
+            // No more path components.
+            break;
+        }
+
+        if ([lastPathComponent hasSuffix:@".app"]) {
             // Manually 'resolve' /var symbolic link.
             // NOTE: NSString's stringByResolvingSymlinksInPath won't work here
             //       as it removes "/private" (documented behavior).
@@ -109,8 +115,10 @@ static NSDictionary *reverseLookupTable$ = nil;
             } else {
                 break;
             }
+        } else {
+            bundlePath = [bundlePath stringByDeletingLastPathComponent];
         }
-    } while ([bundlePath length] != 0);
+    }
 
     return nil;
 }

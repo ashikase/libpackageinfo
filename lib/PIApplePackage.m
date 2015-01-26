@@ -13,10 +13,138 @@
 #import "PIAppleStorePackage.h"
 #import "PIAppleSystemPackage.h"
 
+#include <dlfcn.h>
+#include <objc/runtime.h>
+
+@interface LSApplicationWorkspace : NSObject
++ (id)defaultWorkspace;
+- (id)allInstalledApplications;
+@end
+
+@interface LSApplicationProxy : NSObject // LSBundleProxy <NSSecureCoding>
+@property(readonly, nonatomic) NSString *applicationDSID;
+@property(readonly, nonatomic) NSString *applicationIdentifier;
+@property(readonly, nonatomic) NSString *applicationType;
+@property(readonly, nonatomic) BOOL isContainerized;
+@property(readonly, nonatomic) NSString *shortVersionString;
+- (long)bundleModTime;
+- (id)localizedName;
+- (id)resourcesDirectoryURL;
+@end
+
 @implementation PIApplePackage
 
 static NSDictionary *cachedPackageDetails$ = nil;
 static NSDictionary *reverseLookupTable$ = nil;
+
+static void cachePackageDetails_iOS7() {
+    NSData *data = [[NSData alloc] initWithContentsOfFile:@"/var/mobile/Library/Caches/com.apple.mobile.installation.plist"];
+    if (data != nil) {
+        id plist = nil;
+        if ([NSPropertyListSerialization respondsToSelector:@selector(propertyListWithData:options:format:error:)]) {
+            plist = [NSPropertyListSerialization propertyListWithData:data options:0 format:NULL error:NULL];
+        } else {
+            plist = [NSPropertyListSerialization propertyListFromData:data mutabilityOption:0 format:NULL errorDescription:NULL];
+        }
+
+        if (plist != nil) {
+            Class $NSDictionary = [NSDictionary class];
+            if ([plist isKindOfClass:$NSDictionary]) {
+                // TODO: Consider only storing needed keys in order to
+                //       reduce required memory.
+                //       Also consider checking types of each key to ensure
+                //       they are correct.
+                NSMutableDictionary *cachedPackageDetails = [[NSMutableDictionary alloc] init];
+
+                // Process system apps.
+                id object;
+                object = [plist objectForKey:@"System"];
+                if ([object isKindOfClass:$NSDictionary]) {
+                    [cachedPackageDetails addEntriesFromDictionary:object];
+                } else {
+                    fprintf(stderr, "ERROR: Required key \"System\" not found or incorrect type.\n");
+                }
+
+                // Process user apps.
+                object = [plist objectForKey:@"User"];
+                if ([object isKindOfClass:$NSDictionary]) {
+                    [cachedPackageDetails addEntriesFromDictionary:object];
+                } else {
+                    fprintf(stderr, "ERROR: Required key \"User\" not found or incorrect type.\n");
+                }
+
+                cachedPackageDetails$ = cachedPackageDetails;
+            } else {
+                fprintf(stderr, "ERROR: Unable to parse mobile installation property list.\n");
+            }
+        } else {
+            fprintf(stderr, "ERROR: Unable to open or read mobile installation file.\n");
+        }
+    }
+}
+
+static void cachePackageDetails_iOS8() {
+    void *handle = dlopen("/System/Library/Frameworks/MobileCoreServices.framework/MobileCoreServices", RTLD_LAZY);
+    if (handle != NULL) {
+        NSMutableDictionary *cachedPackageDetails = [[NSMutableDictionary alloc] init];
+
+        Class $LSApplicationWorkspace = objc_getClass("LSApplicationWorkspace");
+        LSApplicationWorkspace *workspace = [$LSApplicationWorkspace defaultWorkspace];
+        for (LSApplicationProxy *proxy in [workspace allInstalledApplications]) {
+            NSString *applicationIdentifier = [proxy applicationIdentifier];
+            if (applicationIdentifier != nil) {
+                NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+
+                [dict setObject:applicationIdentifier forKey:@"CFBundleIdentifier"];
+
+                NSString *applicationDSID = [proxy applicationDSID];
+                if (applicationDSID != nil) {
+                    [dict setObject:[NSNumber numberWithLongLong:[applicationDSID longLongValue]] forKey:@"ApplicationDSID"];
+                }
+
+                NSString *applicationType = [proxy applicationType];
+                if (applicationType != nil) {
+                    [dict setObject:applicationType forKey:@"ApplicationType"];
+                }
+
+                NSString *localizedName = [proxy localizedName];
+                if (localizedName != nil) {
+                    [dict setObject:localizedName forKey:@"CFBundleDisplayName"];
+                }
+
+                NSString *shortVersion = [proxy shortVersionString];
+                if (shortVersion != nil) {
+                    [dict setObject:shortVersion forKey:@"CFBundleShortVersionString"];
+                }
+
+                long value = [proxy bundleModTime];
+                if (value > 0) {
+                    // NOTE: Returned value is relative to "reference date" (2001-01-01 GMT).
+                    //       Make relative to unix epoch to match format used by CFBundleTimestamp.
+                    value += 978307200;
+                    [dict setObject:[NSNumber numberWithLong:value] forKey:@"BundleTimestamp"];
+                }
+
+                NSURL *url = [proxy resourcesDirectoryURL];
+                if (url != nil) {
+                    NSString *path = [url path];
+                    [dict setObject:path forKey:@"Path"];
+
+                    if ([proxy isContainerized]) {
+                        [dict setObject:[path stringByDeletingLastPathComponent] forKey:@"Container"];
+                    }
+                }
+
+                [cachedPackageDetails setObject:dict forKey:applicationIdentifier];
+                [dict release];
+            }
+        }
+
+        cachedPackageDetails$ = cachedPackageDetails;
+
+        dlclose(handle);
+    }
+}
 
 + (void)initialize {
     if (self == [PIApplePackage class]) {
@@ -24,47 +152,10 @@ static NSDictionary *reverseLookupTable$ = nil;
         Class $NSString = [NSString class];
 
         // Parse and cache app details from mobile installation file.
-        NSData *data = [[NSData alloc] initWithContentsOfFile:@"/var/mobile/Library/Caches/com.apple.mobile.installation.plist"];
-        if (data != nil) {
-            id plist = nil;
-            if ([NSPropertyListSerialization respondsToSelector:@selector(propertyListWithData:options:format:error:)]) {
-                plist = [NSPropertyListSerialization propertyListWithData:data options:0 format:NULL error:NULL];
-            } else {
-                plist = [NSPropertyListSerialization propertyListFromData:data mutabilityOption:0 format:NULL errorDescription:NULL];
-            }
-
-            if (plist != nil) {
-                if ([plist isKindOfClass:$NSDictionary]) {
-                    // TODO: Consider only storing needed keys in order to
-                    //       reduce required memory.
-                    //       Also consider checking types of each key to ensure
-                    //       they are correct.
-                    NSMutableDictionary *cachedPackageDetails = [[NSMutableDictionary alloc] init];
-
-                    // Process system apps.
-                    id object;
-                    object = [plist objectForKey:@"System"];
-                    if ([object isKindOfClass:$NSDictionary]) {
-                        [cachedPackageDetails addEntriesFromDictionary:object];
-                    } else {
-                        fprintf(stderr, "ERROR: Required key \"System\" not found or incorrect type.\n");
-                    }
-
-                    // Process user apps.
-                    object = [plist objectForKey:@"User"];
-                    if ([object isKindOfClass:$NSDictionary]) {
-                        [cachedPackageDetails addEntriesFromDictionary:object];
-                    } else {
-                        fprintf(stderr, "ERROR: Required key \"User\" not found or incorrect type.\n");
-                    }
-
-                    cachedPackageDetails$ = cachedPackageDetails;
-                } else {
-                    fprintf(stderr, "ERROR: Unable to parse mobile installation property list.\n");
-                }
-            } else {
-                fprintf(stderr, "ERROR: Unable to open or read mobile installation file.\n");
-            }
+        if (IOS_LT(8_0)) {
+            cachePackageDetails_iOS7();
+        } else {
+            cachePackageDetails_iOS8();
         }
 
         // Create a reverse lookup table for determing identifiers from paths.

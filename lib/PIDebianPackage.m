@@ -331,6 +331,10 @@ static NSDate *installDateForDebianPackageWithIdentifier(NSString *identifier) {
     return [packageDetails_ objectForKey:@"Author"];
 }
 
+- (NSString *)maintainer {
+    return [packageDetails_ objectForKey:@"Maintainer"];
+}
+
 - (NSString *)version {
     return [packageDetails_ objectForKey:@"Version"];
 }

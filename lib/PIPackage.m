@@ -21,6 +21,7 @@
 @dynamic storeIdentifier;
 @dynamic name;
 @dynamic author;
+@dynamic maintainer;
 @dynamic version;
 @dynamic installDate;
 @dynamic bundlePath;
@@ -140,6 +141,10 @@
 }
 
 - (NSString *)author {
+    return nil;
+}
+
+- (NSString *)maintainer {
     return nil;
 }
 

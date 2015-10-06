@@ -16,6 +16,7 @@
 @property(nonatomic, readonly) NSString *storeIdentifier;
 @property(nonatomic, readonly) NSString *name;
 @property(nonatomic, readonly) NSString *author;
+@property(nonatomic, readonly) NSString *maintainer;
 @property(nonatomic, readonly) NSString *version;
 @property(nonatomic, readonly) NSDate *installDate;
 @property(nonatomic, readonly) NSString *bundlePath;
